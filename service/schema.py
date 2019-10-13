@@ -1,12 +1,16 @@
+from typing import List
+
 import graphene
-from datetime import datetime
+
+from service.log_utils import get_logs
 
 
-class Logs(graphene.ObjectType):
-    date_from = graphene.String(required=True)
-    date_to = graphene.String(required=True)
+class Log(graphene.ObjectType):
+    """
+    Represents one line in access.log
+    """
     host_ip = graphene.String()
-    timestamp = graphene.Date()
+    timestamp = graphene.DateTime()
     verb = graphene.String()
     path = graphene.String()
     code = graphene.String()
@@ -14,29 +18,19 @@ class Logs(graphene.ObjectType):
 
 
 class Query(graphene.ObjectType):
-    logs = graphene.Field(
-        Logs,
-        date_from=graphene.String(),
-        date_to=graphene.String(),
+    logs = graphene.List(
+        Log,
+        date_from=graphene.String(required=True),
+        date_to=graphene.String(required=True),
     )
 
-    def resolve_logs(self, info, date_from, date_to) -> Logs:
+    def resolve_logs(self, info, date_from, date_to) -> List[Log]:
         extracted = _extract(date_from, date_to)
-        return Logs(
-            **extracted
-        )
+        return [Log(**item) for item in extracted]
 
 
-# mock response for test porpuses
-def _extract(date_from: str, date_to: str) -> dict:
-    return {
-        'host_ip': '127.0.0.1',
-        'timestamp': datetime.now(),
-        'verb': 'GET',
-        'path': '/',
-        'code': 200,
-        'user_agent': 'Mozilla/5.0',
-    }
+def _extract(date_from: str, date_to: str) -> List[dict]:
+    return get_logs('../resources/access.log', date_from, date_to)
 
 
-schema = graphene.Schema(query=Query)
+schema = graphene.Schema(query=Query, types=[Log])
