@@ -5,6 +5,7 @@ from flask_graphql import GraphQLView
 
 from service.schema import schema
 from service.config import BaseConfig
+from service.db import database
 
 
 def create_app(config: BaseConfig) -> Flask:
@@ -15,6 +16,9 @@ def create_app(config: BaseConfig) -> Flask:
         '/',
         view_func=GraphQLView.as_view('graphql', schema=schema, graphiql=True)
     )
+
+    app.teardown_appcontext(close_connection)
+
     return app
 
 
@@ -23,6 +27,10 @@ def _assign_config(app: Flask, config: BaseConfig):
         app.config.from_object(config)
     except (ImportError, ModuleNotFoundError) as e:
         raise ValueError(f'The config "{config}" is invalid: {str(e)}')
+
+
+def close_connection(exception=None):
+    database.close_connection()
 
 
 if __name__ == '__main__':
