@@ -3,3 +3,5 @@
 *.pyc
 misc.xml
 vcs.xml
+
+postgres-data/
