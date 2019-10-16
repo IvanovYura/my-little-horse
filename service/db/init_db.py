@@ -3,7 +3,7 @@ from psycopg2.sql import SQL, Identifier
 from service.config import BaseConfig
 from service.db.database import connect_with
 from service.logger import logger
-from psycopg2.extensions import connection, cursor as Cursor, ISOLATION_LEVEL_AUTOCOMMIT
+from psycopg2.extensions import connection, ISOLATION_LEVEL_AUTOCOMMIT
 from psycopg2 import DatabaseError
 
 SQL_CHECK_DB = '''
@@ -14,6 +14,7 @@ SQL_CREATE_DB = '''
     CREATE DATABASE {db_name} WITH OWNER={db_user};
 '''
 
+# TODO: name should be unique
 SQL_CREATE_USERS_TABLE = '''
     CREATE TABLE  users (
         id SERIAL,
@@ -66,35 +67,39 @@ def _open_user_connection() -> connection:
     )
 
 
-def _create_db_user(user: str, password: str, cursor: Cursor):
+def _create_db_user(user: str, password: str, conn: connection):
     query = f'CREATE USER {user} WITH PASSWORD \'{password}\';'
 
-    try:
-        cursor.execute(query)
-        logger.info(f'DB user {user} created')
-
-    except DatabaseError:
-        # ignore if user exists
-        logger.warning(f'DB user {user} already existed')
-        pass
-
-
-def _create_db(db_name: str, cursor: Cursor):
-    cursor.execute(SQL_CHECK_DB, {'db_name': db_name})
-    exists = cursor.fetchone()
-
-    if not exists:
+    with conn.cursor() as cursor:
         try:
-            cursor.execute(SQL(SQL_CREATE_DB).format(
-                db_name=Identifier(db_name),
-                db_user=Identifier(db_name)),
-            )
-            logger.info(f'DB {db_name} is created successfully')
-            return True
-        except DatabaseError as e:
-            raise InitDBError(f'Can not create DB {db_name}: {str(e)}')
+            cursor.execute(query)
+            logger.info(f'DB user {user} created')
 
-    logger.warning(f'DB {db_name} already exists')
+        except DatabaseError:
+            # ignore if user exists
+            logger.warning(f'DB user {user} already existed')
+            pass
+
+
+def _create_db(db_name: str, conn: connection):
+    with conn.cursor() as cursor:
+
+        cursor.execute(SQL_CHECK_DB, {'db_name': db_name})
+        exists = cursor.fetchone()
+
+        if not exists:
+            try:
+                cursor.execute(SQL(SQL_CREATE_DB).format(
+                    db_name=Identifier(db_name),
+                    db_user=Identifier(db_name)),
+                )
+                logger.info(f'DB {db_name} is created successfully')
+                return True
+            except DatabaseError as e:
+                raise InitDBError(f'Can not create DB {db_name}: {str(e)}')
+
+        logger.warning(f'DB {db_name} already exists')
+
     return False
 
 
@@ -119,16 +124,15 @@ def init_db():
     user_connection: connection = None
 
     try:
-        with admin_connection.cursor() as cursor:
-            _create_db_user(BaseConfig.DB_USER, BaseConfig.DB_PASSWORD, cursor)
+        _create_db_user(BaseConfig.DB_USER, BaseConfig.DB_PASSWORD, admin_connection)
 
-            if _create_db(BaseConfig.DB_NAME, cursor):
-                user_connection = _open_user_connection()
+        if _create_db(BaseConfig.DB_NAME, admin_connection):
+            user_connection = _open_user_connection()
 
-                _create_users_table(user_connection)
-                _create_admin_user(BaseConfig.ADMIN_USER, BaseConfig.ADMIN_PASSWORD, True, user_connection)
+            _create_users_table(user_connection)
+            _create_admin_user(BaseConfig.ADMIN_USER, BaseConfig.ADMIN_PASSWORD, True, user_connection)
 
-                user_connection.commit()
+            user_connection.commit()
 
     except (InitDBError, DatabaseError) as e:
         logger.error(f'Something went wrong: {str(e)}')

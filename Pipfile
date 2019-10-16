@@ -9,6 +9,7 @@ verify_ssl = true
 graphene = "*"
 flask-graphql = "*"
 psycopg2 = "*"
+flask-basicauth = "*"
 
 [requires]
 python_version = "3.7"

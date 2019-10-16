@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask_graphql import GraphQLView
 
+from service.authentication import init_basic_auth
 from service.db.init_db import init_db
 from service.schema import schema
 from service.config import BaseConfig
@@ -10,7 +11,11 @@ from service.db import database
 
 
 def create_app(config: BaseConfig) -> Flask:
+    """
+    Creates Flask application with specified config
+    """
     app = Flask(__name__)
+
     _assign_config(app, config)
 
     app.add_url_rule(
@@ -31,11 +36,14 @@ def _assign_config(app: Flask, config: BaseConfig):
 
 
 def close_connection(exception=None):
+    # close connection after each request
     database.close_connection()
 
 
 config = os.environ.get('APP_SETTINGS', 'service.config.DevelopmentConfig')
 app = create_app(config)
+
+init_basic_auth(app)
 
 if __name__ == '__main__':
     init_db()

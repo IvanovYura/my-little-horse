@@ -7,6 +7,8 @@ class BaseConfig:
     ADMIN_USER = 'admin'
     ADMIN_PASSWORD = 'admin'
 
+    BASIC_AUTH_FORCE = True
+
     DB_HOST = os.environ.get('DB_HOST', 'localhost')
     DB_PORT = int(os.environ.get('DB_PORT', 54320))
     DB_NAME = os.environ.get('DB_NAME', SERVICE_NAME)
