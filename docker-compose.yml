@@ -6,3 +6,5 @@ services:
     - ./postgres-data:/var/lib/postgresql/data
     ports:
     - "54320:5432"
+
+

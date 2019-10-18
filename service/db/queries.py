@@ -1,6 +1,5 @@
 from psycopg2.extras import RealDictCursor
-
-from service.db.database import conn
+from psycopg2.extensions import connection
 
 SQL_SELECT_USER_BY_NAME = '''
     SELECT
@@ -14,7 +13,7 @@ SQL_SELECT_USER_BY_NAME = '''
 '''
 
 
-def fetch_user(name: str):
+def fetch_user(name: str, conn: connection) -> dict:
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
         cursor.execute(SQL_SELECT_USER_BY_NAME, {'name': name})
         user = cursor.fetchone()

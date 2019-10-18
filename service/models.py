@@ -1,3 +1,4 @@
+from service.db.database import conn
 from service.db.queries import fetch_user
 
 
@@ -7,7 +8,7 @@ class User:
     """
 
     def __init__(self, name: str):
-        user = fetch_user(name)
+        user = fetch_user(name, conn)
 
         self.name = user['name']
         self.password = user['password']

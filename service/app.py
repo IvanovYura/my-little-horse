@@ -40,12 +40,16 @@ def close_connection(exception=None):
     database.close_connection()
 
 
-config = os.environ.get('APP_SETTINGS', 'service.config.DevelopmentConfig')
-app = create_app(config)
+def main():
+    config = os.environ.get('APP_SETTINGS', 'service.config.DevelopmentConfig')
+    app = create_app(config)
 
-init_basic_auth(app)
+    init_basic_auth(app)
 
-if __name__ == '__main__':
     init_db()
 
     app.run(use_reloader=False)
+
+
+if __name__ == '__main__':
+    main()

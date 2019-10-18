@@ -23,3 +23,9 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
+
+
+class TestConfig(BaseConfig):
+    DB_NAME = os.environ.get('DB_NAME', f'test_{BaseConfig.SERVICE_NAME}')
+    DB_USER = os.environ.get('DB_USER', f'test_{BaseConfig.SERVICE_NAME}')
+    DB_PASSWORD = os.environ.get('DB_PASSWORD', f'test_{BaseConfig.SERVICE_NAME}')

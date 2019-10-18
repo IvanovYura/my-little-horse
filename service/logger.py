@@ -1,7 +1,7 @@
 from logging import Logger, getLogger, StreamHandler, INFO, Formatter
 import sys
 
-LOG_FORMAT_SHORT = "%(levelname)s\t%(message)s"
+LOG_FORMAT = "%(asctime)s\t%(levelname)s\t%(message)s"
 
 
 def init_logger(level: int, handler: StreamHandler) -> Logger:
@@ -12,7 +12,7 @@ def init_logger(level: int, handler: StreamHandler) -> Logger:
     logger.setLevel(level)
 
     logger.addHandler(handler)
-    formatter = Formatter(LOG_FORMAT_SHORT)
+    formatter = Formatter(LOG_FORMAT)
     handler.setFormatter(formatter)
 
     return logger
