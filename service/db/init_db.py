@@ -1,6 +1,6 @@
 from psycopg2.sql import SQL, Identifier
 
-from service.config import BaseConfig
+from service.config import Config
 from service.db.database import connect_with
 from service.logger import logger
 from psycopg2.extensions import connection, ISOLATION_LEVEL_AUTOCOMMIT
@@ -41,14 +41,17 @@ class InitDBError(Exception):
     pass
 
 
+config = Config.create()
+
+
 def _open_admin_connection() -> connection:
     # User and DB should be created by Postgres admin
     connection = connect_with(
-        host=BaseConfig.DB_HOST,
-        port=BaseConfig.DB_PORT,
+        host=config.DB_HOST,
+        port=config.DB_PORT,
         dbname=None,
-        user=BaseConfig.DB_ADMIN_USER,
-        password=BaseConfig.DB_ADMIN_PASSWORD,
+        user=config.DB_ADMIN_USER,
+        password=config.DB_ADMIN_PASSWORD,
     )
 
     # CREATE DB statement should be done outside of transaction block
@@ -59,11 +62,11 @@ def _open_admin_connection() -> connection:
 
 def _open_user_connection() -> connection:
     return connect_with(
-        host=BaseConfig.DB_HOST,
-        port=BaseConfig.DB_PORT,
-        dbname=BaseConfig.DB_NAME,
-        user=BaseConfig.DB_USER,
-        password=BaseConfig.DB_PASSWORD,
+        host=config.DB_HOST,
+        port=config.DB_PORT,
+        dbname=config.DB_NAME,
+        user=config.DB_USER,
+        password=config.DB_PASSWORD,
     )
 
 
@@ -124,13 +127,13 @@ def init_db():
     user_connection: connection = None
 
     try:
-        _create_db_user(BaseConfig.DB_USER, BaseConfig.DB_PASSWORD, admin_connection)
+        _create_db_user(config.DB_USER, config.DB_PASSWORD, admin_connection)
 
-        if _create_db(BaseConfig.DB_NAME, admin_connection):
+        if _create_db(config.DB_NAME, admin_connection):
             user_connection = _open_user_connection()
 
             _create_users_table(user_connection)
-            _create_admin_user(BaseConfig.ADMIN_USER, BaseConfig.ADMIN_PASSWORD, True, user_connection)
+            _create_admin_user(config.ADMIN_USER, config.ADMIN_PASSWORD, True, user_connection)
 
             user_connection.commit()
 

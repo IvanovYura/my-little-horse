@@ -5,3 +5,5 @@ misc.xml
 vcs.xml
 
 postgres-data/
+
+.DS_Store
