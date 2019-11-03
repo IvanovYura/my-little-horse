@@ -1,8 +1,10 @@
 from typing import List
 
 from service.logs_parsers.access_log_parser import AccessLogParser
+from service.logs_parsers.test_log_parser import TestLogParser
 
-parser = AccessLogParser()
+access_log_parser = AccessLogParser()
+test_log_parser = TestLogParser()
 
 
 def get_logs(path_to_log: str, date_from: str, date_to: str) -> List[dict]:
@@ -18,11 +20,16 @@ def get_logs(path_to_log: str, date_from: str, date_to: str) -> List[dict]:
 
     with open(path_to_log) as lines:
         for line in lines:
-            entry = parser.parse(line)
+            entry = access_log_parser.parse(line)
 
             if entry:
                 result.append(
-                    parser.filter_log_entry(entry, date_from, date_to),
+                    access_log_parser.filter_log_entry(entry, date_from, date_to),
                 )
 
     return result
+
+
+def get_test_logs() -> List[dict]:
+    test_parser = TestLogParser()
+    return [test_parser.parse('A test message')]

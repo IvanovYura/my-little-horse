@@ -17,7 +17,6 @@ class AccessLogParser(BaseParser):
 
     # because for each log date can be in any format
     LOG_DATE_TIME_FORMAT = '%d/%b/%Y:%H:%M:%S'
-    DATE_FORMAT = '%Y-%m-%d'
 
     def parse(self, log_line: str) -> dict:
         """

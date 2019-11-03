@@ -2,7 +2,7 @@ class BaseParser:
     """
     Abstract class for parsers
     """
-
+    DATE_FORMAT = '%Y-%m-%d'
     LOG_LINE_REGEXP: str
 
     def parse(self, log_line: str) -> dict:

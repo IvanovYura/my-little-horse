@@ -5,7 +5,7 @@ from flask_graphql import GraphQLView
 
 from service.authentication import init_basic_auth
 from service.db.init_db import init_db
-from service.schema import schema
+from service.schema.schema import schema
 from service.config import BaseConfig
 from service.db import database
 

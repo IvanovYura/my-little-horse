@@ -26,11 +26,11 @@ class Query(graphene.ObjectType):
 
     def resolve_logs(self, info, date_from, date_to) -> List[Log]:
         extracted = _extract(date_from, date_to)
+        if not any(extracted):
+            return []
+
         return [Log(**item) for item in extracted]
 
 
 def _extract(date_from: str, date_to: str) -> List[dict]:
     return get_logs('../resources/access.log', date_from, date_to)
-
-
-schema = graphene.Schema(query=Query, types=[Log])
